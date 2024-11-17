@@ -116,7 +116,28 @@ inner_loop_start:
     
 inner_loop_end:
     # TODO: Add your own implementation
+    
+    slli t0, a2, 2      # t0 = a2 * 4
 
+    add s3, s3, t0      # move to next row in matrix A
+    
+    addi s0, s0, 1      # increment outer loop counter
+
+    j outer_loop_start
+
+outer_loop_end:
+    # 
+    lw ra, 0(sp)
+    lw s0, 4(sp)
+    lw s1, 8(sp)
+    lw s2, 12(sp)
+    lw s3, 16(sp)
+    lw s4, 20(sp)
+    lw s5, 24(sp)
+    
+    addi sp, sp, 28
+    
+    ret
 error:
     li a0, 38
     j exit

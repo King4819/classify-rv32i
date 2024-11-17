@@ -167,6 +167,11 @@ classify:
     lw t0, 0(s3)
     lw t1, 0(s8)
     # mul a0, t0, t1 # FIXME: Replace 'mul' with your own implementation
+
+    mv a0, t0
+    mv a1, t1
+    call mul_custom
+
     slli a0, a0, 2
     jal malloc 
     beq a0, x0, error_malloc
@@ -205,6 +210,17 @@ classify:
     lw t1, 0(s8)
     # mul a1, t0, t1 # length of h array and set it as second argument
     # FIXME: Replace 'mul' with your own implementation
+    addi sp, sp, -4
+    sw a0, 0(sp)
+    
+    mv a0, t0
+    mv a1, t1
+    call mul_custom
+    mv a1, a0
+
+    lw a0, 0(sp)
+    addi sp, sp, 4
+
     
     jal relu
     
@@ -227,6 +243,10 @@ classify:
     lw t0, 0(s3)
     lw t1, 0(s6)
     # mul a0, t0, t1 # FIXME: Replace 'mul' with your own implementation
+    mv a0, t0
+    mv a1, t1
+    call mul_custom
+    
     slli a0, a0, 2
     jal malloc 
     beq a0, x0, error_malloc
@@ -286,9 +306,19 @@ classify:
     mv a0, s10 # load o array into first arg
     lw t0, 0(s3)
     lw t1, 0(s6)
-    mul a1, t0, t1 # load length of array into second arg
+    # mul a1, t0, t1 # load length of array into second arg
     # FIXME: Replace 'mul' with your own implementation
-    
+    addi sp, sp, -4
+    sw a0, 0(sp)
+
+    mv a0, t0
+    mv a1, t1
+    call mul_custom
+    mv a1, a0
+
+    lw a0, 0(sp)
+    addi sp, sp, 4
+
     jal argmax
     
     mv t0, a0 # move return value of argmax into t0
@@ -384,3 +414,35 @@ error_args:
 error_malloc:
     li a0, 26
     j exit
+
+
+######## My custom mul func ########
+# Args:
+# a0: multiplicand
+# a1: multiplier
+
+# Returns:
+# a0: product (result)
+
+# Will use t0, t1 !!!
+
+mul_custom:
+    li t0, 0                        # Initialize t0, temporary store product (result)
+
+mul_custom_loop:
+    beq a1, x0, mul_custom_end      # If a1 (multiplier) is 0, goto mul_custom_end
+    andi t1, a1, 1                  # t1 (check if the least significant bit of multiplier is set)
+    beq t1, x0, mul_custom_skip     # If not set, goto mul_custom_skip
+
+    add t0, t0, a0                  # Add a0 (multiplicand) to t0 (product)
+
+mul_custom_skip:
+    slli a0, a0, 1                  # Shift a0 (multiplicand) left 
+    srli a1, a1, 1                  # Shift a1 (multiplier) right 
+    j mul_custom_loop               # Goto mul_custom_loop 
+
+mul_custom_end:
+    mv a0, t0                       # move product (result) to a0
+    ret                             # Return from function
+
+######## My custom mul func ########

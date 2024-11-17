@@ -63,6 +63,24 @@ write_matrix:
 
     # mul s4, s2, s3   # s4 = total elements
     # FIXME: Replace 'mul' with your own implementation
+    addi sp, sp, -20
+    sw ra, 0(sp)
+    sw a0, 4(sp)
+    sw a1, 8(sp)
+    sw t0, 12(sp)
+    sw t1, 16(sp)
+
+    mv a0, s2                    # a0 (mul_custom multiplicand)
+    mv a1, s3                    # a1 (mul_custom multiplier)
+    jal ra, mul_custom
+    mv s4, a0                    # move mul_custom result to s4
+
+    lw ra, 0(sp)
+    lw a0, 4(sp)
+    lw a1, 8(sp)
+    lw t0, 12(sp)
+    lw t1, 16(sp)
+    addi sp, sp, 20
 
     # write matrix data to file
     mv a0, s0
@@ -91,6 +109,37 @@ write_matrix:
     addi sp, sp, 44
 
     jr ra
+
+######## My custom mul func ########
+# Args:
+# a0: multiplicand
+# a1: multiplier
+
+# Returns:
+# a0: product (result)
+
+# Will use t0, t1 !!!
+
+mul_custom:
+    li t0, 0                        # Initialize t0, temporary store product (result)
+
+mul_custom_loop:
+    beq a1, x0, mul_custom_end      # If a1 (multiplier) is 0, goto mul_custom_end
+    andi t1, a1, 1                  # t1 (check if the least significant bit of multiplier is set)
+    beq t1, x0, mul_custom_skip     # If not set, goto mul_custom_skip
+
+    add t0, t0, a0                  # Add a0 (multiplicand) to t0 (product)
+
+mul_custom_skip:
+    slli a0, a0, 1                  # Shift a0 (multiplicand) left 
+    srli a1, a1, 1                  # Shift a1 (multiplier) right 
+    j mul_custom_loop               # Goto mul_custom_loop 
+
+mul_custom_end:
+    mv a0, t0                       # move product (result) to a0
+    ret                             # Return from function
+
+######## My custom mul func ########
 
 fopen_error:
     li a0, 27

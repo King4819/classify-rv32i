@@ -29,6 +29,20 @@ relu:
 
 loop_start:
     # TODO: Add your own implementation
+    beq t1, a1, loop_end
+               
+    lw t4, 0(a0)        
+    
+    bge t4, zero, skip  
+    sw zero, 0(a0)      
+    
+skip:
+    addi a0, a0, 4            # move to next element 
+    addi t1, t1, 1            # Increment index i
+    j loop_start       
+
+loop_end:
+    jr ra
 
 error:
     li a0, 36          

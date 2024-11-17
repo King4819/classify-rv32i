@@ -22,7 +22,8 @@ abs:
     bge t0, zero, done
 
     # TODO: Add your own implementation
-
+    sub t0, zero, t0         # t0 = 0 - t0 (negate)
+    sw t0, 0(a0)             # Store the result back to memory
 done:
     # Epilogue
     jr ra
